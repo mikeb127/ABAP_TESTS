@@ -1,0 +1,55 @@
+CLASS zcl_payment_time_rpt DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+    TYPES:
+           BEGIN OF ty_vendor,
+           lifnr TYPE lfa1-lifnr,
+           bukrs TYPE lfb1-bukrs,
+           ktokk TYPE lfa1-ktokk,
+           zterm TYPE lfb1-zterm,
+         END OF ty_vendor,
+
+         BEGIN OF ty_sub_bseg,
+           bukrs TYPE bseg-bukrs,
+           augdt TYPE bseg-augdt, "Clearing date
+           lifnr TYPE bseg-lifnr, "Vendor
+           shkzg TYPE bseg-shkzg, "Credit Indicator.
+         END OF ty_sub_bseg,
+
+         it_vendor TYPE STANDARD TABLE OF ty_vendor,
+         et_cms TYPE STANDARD TABLE OF ty_sub_bseg.
+
+  INTERFACES if_amdp_marker_hdb.
+      CLASS-METHODS: get_vendor_cms
+      IMPORTING VALUE(it_vendors) TYPE it_vendor
+                VALUE(iv_bukrs) TYPE bukrs
+                VALUE(iv_datum_start) TYPE syst-datum
+                VALUE(iv_datum_end) TYPE syst-datum
+    EXPORTING VALUE(et_cms) TYPE et_cms.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS zcl_payment_time_rpt IMPLEMENTATION.
+METHOD get_vendor_cms BY DATABASE PROCEDURE
+                         FOR HDB
+                         LANGUAGE SQLSCRIPT
+                         OPTIONS READ-ONLY
+                         USING bseg.
+
+       et_cms = SELECT b.bukrs, b.augdt, b.lifnr, b.shkzg FROM
+        :it_vendors as a INNER JOIN bseg as b
+        ON a.lifnr = b.lifnr WHERE
+        b.bukrs = iv_bukrs AND
+        ( b.bschl = '21' OR b.bschl = '0Y') AND
+        b.augdt > iv_datum_start AND
+        b.augdt < iv_datum_end
+        ORDER BY lifnr;
+
+   ENDMETHOD.
+ENDCLASS.

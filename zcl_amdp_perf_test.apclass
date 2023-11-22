@@ -1,0 +1,63 @@
+CLASS zcl_amdp_perf_test DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+TYPES:
+  BEGIN OF ty_join,
+    bukrs TYPE bkpf-bukrs,
+    belnr TYPE bkpf-belnr,
+    gjahr TYPE bkpf-gjahr,
+    blart TYPE bkpf-blart,
+    bldat TYPE bkpf-bldat,
+    buzei TYPE bseg-buzei,
+    koart TYPE bseg-koart,
+    sgtxt TYPE bseg-sgtxt,
+    zlsch TYPE regup-zlsch,
+    bschl TYPE regup-bschl,
+  END OF ty_join,
+
+  tty_join TYPE STANDARD TABLE OF ty_join.
+
+    INTERFACES if_amdp_marker_hdb .
+
+    CLASS-METHODS: amdp_method
+    EXPORTING VALUE(et_tab) TYPE tty_join.
+
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS zcl_amdp_perf_test IMPLEMENTATION.
+
+METHOD amdp_method BY DATABASE PROCEDURE
+FOR HDB
+LANGUAGE SQLSCRIPT
+OPTIONS READ-ONLY
+USING bkpf bseg regup.
+
+et_tab = SELECT bkpf.bukrs,
+                bkpf.belnr,
+                bkpf.gjahr,
+                bkpf.blart,
+                bkpf.bldat,
+                bseg.buzei,
+                bseg.koart,
+                bseg.sgtxt,
+                regup.zlsch,
+                regup.bschl FROM bkpf left outer join bseg on
+                bkpf.bukrs = bseg.bukrs AND
+                bkpf.belnr = bseg.belnr and
+                bkpf.gjahr = bseg.gjahr left OUTER JOIN regup
+                ON bseg.bukrs = regup.bukrs AND
+                bseg.belnr = regup.belnr and
+                bseg.gjahr = regup.gjahr and
+                bseg.buzei = regup.buzei WHERE
+                bkpf.bukrs = '2010';
+
+ENDMETHOD.
+
+ENDCLASS.

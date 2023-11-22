@@ -1,0 +1,59 @@
+@AbapCatalog.sqlViewName: 'ziperftest'
+@AbapCatalog.compiler.CompareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Integration View for performance test'
+define view Z_I_PERF_TEST as select from Z_B_PERF_TEST left outer join Z_B_BSID_TEST
+on Z_B_PERF_TEST.belnr = Z_B_BSID_TEST.belnr and
+Z_B_PERF_TEST.bukrs = Z_B_BSID_TEST.bukrs and
+Z_B_PERF_TEST.buzei = Z_B_BSID_TEST.buzei and
+Z_B_PERF_TEST.gjahr = Z_B_BSID_TEST.gjahr
+{
+    Z_B_PERF_TEST.bukrs,
+    Z_B_PERF_TEST.belnr,
+    Z_B_PERF_TEST.buzei,
+    Z_B_PERF_TEST.gjahr,
+    Z_B_PERF_TEST.blart,
+    Z_B_PERF_TEST.bldat,
+    Z_B_PERF_TEST.koart,
+    Z_B_PERF_TEST.sgtxt,
+    Z_B_BSID_TEST.zlsch,
+    Z_B_BSID_TEST.bschl
+} where Z_B_PERF_TEST.bukrs = '2010'
+
+*******START BASE VIEWS**********
+
+@AbapCatalog.sqlViewName: 'zbperftest'
+@AbapCatalog.compiler.CompareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'BKPF - BSEG JOIN for performance test'
+define view Z_B_PERF_TEST as select from bkpf left outer join bseg on
+bkpf.bukrs = bseg.bukrs and
+bkpf.belnr = bseg.belnr and
+bkpf.gjahr = bseg.gjahr
+{
+ key bkpf.bukrs,
+ key bkpf.belnr,
+ key bkpf.gjahr,
+ key bseg.buzei,
+    bkpf.blart,
+    bkpf.bldat,
+    bseg.koart,
+    bseg.sgtxt
+}
+
+@AbapCatalog.sqlViewName: 'zbbsidtest'
+@AbapCatalog.compiler.CompareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Base BSID view for performance test'
+define view Z_B_BSID_TEST as select from regup
+{
+    bukrs,
+    belnr,
+    gjahr,
+    buzei,
+    zlsch,
+    bschl
+} where bukrs = '2010'
